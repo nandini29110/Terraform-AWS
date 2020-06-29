@@ -292,7 +292,7 @@ provisioner "remote-exec" {
 
 }
 
-resource "null_resource" "nulllocal1"  {
+resource "null_resource" "last"  {
     depends_on = [
         aws_cloudfront_distribution.s3_distribution,
      ]

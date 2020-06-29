@@ -2,7 +2,7 @@
 provider "aws" {
   region = "ap-south-1"
   #alias = "infra"
-  profile = "root_user"
+  profile = "terra_user"
 }
 
 
@@ -269,4 +269,40 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+  depends_on = [
+    aws_s3_bucket.nannubucket
+   ]
+
+   connection {
+  type = "ssh"
+  user = "terra-user"
+  private_key = tls_private_key.private_key.private_key_pem
+  host = aws_instance.my_Ec2_instance.public_ip
+ }
+provisioner "remote-exec" {
+     
+      inline = [
+          "sudo su << EOF",
+           "echo \"<img src=\"https://\"${aws_cloudfront_distribution.s3_distribution.domain_name}\"/image.jpg\">\" >> /var/www/html/nandini.html",
+
+            "EOF"
+      ]
+  }
 }
+
+}
+
+resource "null_resource" "nulllocal1"  {
+    depends_on = [
+        aws_cloudfront_distribution.s3_distribution,
+     ]
+
+     provisioner "local-exec" {
+           "echo \"<img src=\"https://\"${aws_cloudfront_distribution.s3_distribution.domain_name}\"/image.jpg\">\" >> /var/www/html/nandini.html",
+           command = "start chrome  ${aws_instance.my_Ec2_instance.public_ip}"
+      }
+    }
+ }
+ 
+
+
